@@ -1,0 +1,1 @@
+java -jar ProduceJob-0.0.1-SNAPSHOT.jar --spring.config.location=/home/wucan/sce-msgbus/conf/application.yml
