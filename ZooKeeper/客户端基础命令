@@ -1,0 +1,11 @@
+获取节点更新信息：stat path
+修改节点：set path data [version]
+查看：ls path
+设置权限：setAcl path acl
+删除节点：delete path
+获取节点数据：get path
+创建节点：create [-s] [-e] path data acl
+获取权限信息：getAcl path
+设置watch事件：stat path watch
+获取watch事件：get path watch
+
