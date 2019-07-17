@@ -1,0 +1,2 @@
+查询topic列表：kafka-topics.sh --list --zookeeper 10.1.0.41:2181,10.1.0.42:2181,10.1.0.43:2181
+删除topic：kafka-topics.sh --delete --zookeeper 10.1.0.41:2181,10.1.0.42:2181,10.1.0.43:2181 --topic test
