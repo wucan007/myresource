@@ -1,0 +1,37 @@
+jdk-8u161-linux-x64.tar.gz下载地址
+链接：https://pan.baidu.com/s/1uD-yqCLU_n4MU0_UNtxEAg
+提取码：2mnj
+
+root用户安装
+1.解压安装包，重命名为jdk
+tar -zvxf jdk-8u161-linux-x64.tar.gz
+mv jdk1.8.0_161 jdk
+2.安装jdk到/usr/local/
+mv jdk /usr/local/
+3.配置环境变量
+vim /etc/profile
+export JAVA_HOME=/usr/local/jdk
+export JRE_HOME=/usr/local/jdk/jre
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib
+export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
+4.使立即生效
+source /etc/profile
+5.验证
+java -version
+
+普通用户安装
+1.解压安装包，重命名为jdk
+tar -zvxf jdk-8u161-linux-x64.tar.gz
+mv jdk1.8.0_161 jdk
+2.安装jdk到/usr/local/
+mv jdk /usr/local/
+3.配置环境变量
+vi ~/.bash_profile
+export PATH
+export JAVA_HOME=/usr/local/jdk
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+4.使立即生效
+source ~/.bash_profile
+5.验证
+java -version
