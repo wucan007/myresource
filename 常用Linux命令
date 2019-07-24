@@ -7,3 +7,4 @@ du -sh * 查看当前目录下每个文件大小
 ifconfig 查看本机IP
 chown -R 用户名称 目录名称  更改目录所有者
 chmod -R 755 目录名称 更改目录权限命令
+grep -rn "hello" * 查找当前目录下所有包含hello的文件
