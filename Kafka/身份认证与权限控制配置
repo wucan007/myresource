@@ -1,0 +1,55 @@
+一、配置kafka server端（每个broker）
+1.编辑原有配置文件vi /home/wucan/kafka/kafka_2.11-1.0.0/config/server.properties
+listeners=SASL_PLAINTEXT://192.168.43.209:9092
+security.inter.broker.protocol=SASL_PLAINTEXT
+sasl.enabled.mechanisms=PLAIN
+sasl.mechanism.inter.broker.protocol=PLAIN
+allow.everyone.if.no.acl.found=true
+super.users=User:root
+authorizer.class.name=kafka.security.auth.SimpleAclAuthorizer
+2.创建新的配置文件vi /home/wucan/kafka/kafka_2.11-1.0.0/config/kafka_server_jaas.conf
+KafkaServer{
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="kafka"
+        password="kafkapswd"
+        user_ kafkaa（用户名）="kafkaapswd"（密码）
+        user_ kafkab（用户名）="kafkabpswd"（密码）
+        user_ kafkac（用户名）="kafkacpswd"（密码）
+        user_ kafkad（用户名）="kafkadpswd"（密码）;
+};
+3.修改执行文件vi /home/wucan/kafka/kafka_2.11-1.0.0/bin/kafka-server-start.sh
+if ["x$KAFKA_OPTS" ]; then
+    export KAFKA_OPTS="-Djava.security.auth.login.config=/home/wucan/kafka/kafka_2.11-1.0.0/config/kafka_server_jaas.conf"
+fi
+4.修改执行文件vi /home/wucan/kafka/kafka_2.11-1.0.0/bin/kafka-run-class.sh
+KAFKA_SASL_OPTS='-Djava.security.auth.login.config=/home/wucan/kafka/kafka_2.11-1.0.0/config/kafka_server_jaas.conf'
+if ["x$DAEMON_MODE" = "xtrue" ]; then
+  nohup $JAVA $KAFKA_HEAP_OPTS$KAFKA_JVM_PERFORMANCE_OPTS $KAFKA_GC_LOG_OPTS $KAFKA_SASL_OPTS  $KAFKA_JMX_OPTS$KAFKA_LOG4J_OPTS -cp $CLASSPATH $KAFKA_OPTS "$@" >"$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+else
+  exec $JAVA $KAFKA_HEAP_OPTS$KAFKA_JVM_PERFORMANCE_OPTS $KAFKA_GC_LOG_OPTS $KAFKA_SASL_OPTS $KAFKA_JMX_OPTS $KAFKA_LOG4J_OPTS -cp $CLASSPATH$KAFKA_OPTS "$@"
+fi
+
+二、配置kafka client端
+1.创建新的配置文件vi /home/wucan/kafka/kafka_2.11-1.0.0/config/kafka_client_jaas.conf
+KafkaClient{
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username=" kafkaa"
+        password=" kafkaapswd";
+};
+2.修改执行文件
+vi /home/wucan/kafka/kafka_2.11-1.0.0/bin/kafka-console-consumer.sh
+vi /home/wucan/kafka/kafka_2.11-1.0.0/bin/kafka-console-producer.sh
+if ["x$KAFKA_OPTS" ]; then
+    exportKAFKA_OPTS="-Djava.security.auth.login.config=/home/wucan/kafka/kafka_2.11-1.0.0/config/kafka_client_jaas.conf"
+fi
+
+三、Java客户端消费
+运行jar包的服务器的指定路径下必须有kafka_client_jaas.conf文件
+在程序中添加如下配置
+System.setProperty("java.security.auth.login.config","xx/kafka_client_jaas.conf");
+props.put("security.protocol","SASL_PLAINTEXT");
+props.put("sasl.mechanism","PLAIN");
+
+四、部署过程中遇到的问题及解决方法
+问题描述：发布消息、订阅消息时，出现如下错误，WARN [Consumer clientId=consumer-1, groupId=console-consumer-20752]Error while fetching metadata with correlation id 2 :{test2=LEADER_NOT_AVAILABLE} (org.apache.kafka.clients.NetworkClient)
+解决方法：各客户端的用户名设置为相同，多个客户端同时管理会产生冲突。
