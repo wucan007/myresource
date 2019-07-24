@@ -1,0 +1,119 @@
+查看防火墙规则：iptables -L -n
+添加防火墙规则：vi /etc/sysconfig/iptables
+打开防火墙：systemctl start iptables.service
+关闭防火墙：systemctl stop iptables.service
+重启防火墙：systemctl restart iptables
+
+语法 iptables [-t 表] [操作命令] [链] [规则号码] [匹配条件] [-j 匹配动作]
+
+表
+filter：确定是否放行该数据包（过滤）
+nat：修改数据包中的源、目标地址或端口
+mangle：为数据包设置标记
+raw：确实是否对该数据包进行状态跟踪
+security：是否定义强制访问控制规则
+
+链
+INPUT： 处理入站数据包
+OUTPUT：处理出站数据包
+FORWARD： 处理转发数据包
+PREROUTING：在进行路由选择前处理数据包
+POSTROUTING：在进行路由选择后处理数据包
+
+操作命令
+-A <链名>  （APPEND，追加一条规则并放到最后） 
+iptables -t filter -A INPUT -j DROP 在 filter 表的INPUT链里追加一条规则作为最后一条规则，匹配所有访问本机IP 的数据包，匹配到的丢弃。
+-I <链名> [规则号码] （INSERT，插入一条规则） 
+iptables -I INPUT -j DROP 在 filter 表的INPUT链里插入一条规则（插入成第 1条）
+iptables -I INPUT 3 -j DROP 在 filter 表的INPUT链里插入一条规则（插入成第 3条）
+【注意： -t filter可不写，不写则自动默认是 filter 表；-I链名 [规则号码]，如果不写规则号码，则默认是1；确保规则号码 ≤（已有规则数 + 1），否则报错】
+-D <链名> <规则号码 |具体规则内容> （DELETE，删除一条规则）
+iptables -D INPUT 3（按号码匹配） 删除filter 表INPUT链中的第三条规则
+iptables -D INPUT -s 192.168.0.1 -j DROP（按内容匹配） 删除filter 表INPUT链中内容为“-s 192.168.0.1 -j DROP”的规则
+【注意：若规则列表中有多条相同的规则时，按内容匹配只删除序号最小的一条；按号码匹配删除时，确保规则号码 ≤ 已有规则数，否则报错；按内容匹配删除时，确保规则存在，否则报错】
+-R <链名> <规则号码> <具体规则内容> （REPLACE，替换一条规则）
+iptables -R INPUT 3 -j ACCEPT  将原来编号为3 的规则内容替换为“-j ACCEPT”
+【注意：确保规则号码 ≤ 已有规则数，否则报错】
+-P <链名> <动作> （POLICY，设置某个链的默认规则）
+iptables -P INPUT DROP 设置 filter 表INPUT链的默认规则是 DROP
+【当数据包没有被规则列表里的任何规则匹配到时，按此默认规则处理。动作前面不能加–j，这也是唯一一种匹配动作前面不加–j的情况】
+-F [链名] （FLUSH，清空规则）
+iptables -F INPUT 清空 filter 表INPUT链中的所有规则
+iptables -t nat -F PREROUTING 清空 nat 表PREROUTING 链中的所有规则
+【注意：-F仅仅是清空链中规则，并不影响 -P设置的默认规则；-P设置了 DROP后，使用 -F一定要小心；如果不写链名，默认清空某表里所有链里的所有规则】
+-L <链名> （LIST，列出规则）
+    v：显示详细信息，包括每条规则的匹配包数量和匹配字节数
+    x：在v 的基础上，禁止自动单位换算（K、M）
+    n：只显示IP 地址和端口号码，不显示域名和服务名称
+iptables -L 粗略列出 filter 表所有链及所有规则
+iptables -t nat-vnL 用详细方式列出nat表所有链的所有规则，只显示 IP地址和端口号
+iptables -t nat-vxnLPREROUTING 用详细方式列出nat表 PREROUTING 链的所有规则以及详细数字
+
+匹配条件
+-i <匹配数据进入的网络接口>
+-i eth0  匹配是否从网络接口eth0 进来
+-i ppp0 匹配是否从网络接口ppp0 进来
+-o <匹配数据流出的网络接口>
+-o eth0
+-o ppp0
+-s <匹配来源地址> 可以是 IP、NET、DOMAIN，也可空（任何地址）
+-s 192.168.0.1    匹配来自 192.168.0.1的数据包
+-s 192.168.1.0/24 匹配来自 192.168.1.0/24网络的数据包
+-s 192.168.0.0/16 匹配来自 192.168.0.0/16网络的数据包
+-d <匹配目的地址> 可以是 IP、NET、DOMAIN，也可以空
+-d 202.106.0.20   匹配去往 202.106.0.20的数据包
+-d 202.106.0.0/16 匹配去往 202.106.0.0/16网络的数据包
+-d www.abc.com    匹配去往域名 www.abc.com的数据包
+-p <匹配协议类型> 可以是 TCP、UDP、ICMP等，也可为空
+-p tcp
+-p udp
+--sport <匹配源端口> 可以是个别端口，可以是端口范围
+--sport 1000           匹配源端口是1000 的数据包
+--sport 1000:3000  匹配源端口是 1000-3000的数据包（含1000、3000）
+--sport :3000          匹配源端口是3000 以下的数据包（含3000）
+--sport 1000:          匹配源端口是1000 以上的数据包（含1000）
+--dport <匹配目的端口> 可以是个别端口，可以是端口范围
+--dport 80                匹配源端口是80 的数据包
+--dport 6000:8000   匹配源端口是6000-8000 的数据包（含6000、8000）
+--dport :3000           匹配源端口是3000 以下的数据包（含3000）
+--dport 1000:           匹配源端口是1000 以上的数据包（含1000）
+【注意：--sport 和 --dport 必须配合 -p 参数使用】
+
+动作
+-j ACCEPT 通过，允许数据包通过本链而不拦截它
+iptables -A INPUT -j ACCEPT      允许所有访问本机 IP的数据包通过
+-j DROP 丢弃，阻止数据包通过本链而丢弃它
+iptables -A FORWARD -s 192.168.80.39 -j DROP 阻止来源地址为 192.168.80.39的数据包通过本机
+-j DNAT --to IP（nat 表的PREROUTING链） 目的地址转换，DNAT 支持转换为单IP，也支持转换到一组连续的IP 地址
+iptables -t nat -A PREROUTING -i ppp0 -p tcp --dport 80 -j DNAT --to 192.168.0.1 把从 ppp0进来的要访问 TCP/80的数据包目的地址改为 192.168.0.1
+-j SNAT --to IP（nat 表的POSTROUTING 链） 源地址转换，SNAT 支持转换为单IP，也支持转换一组连续的IP 地址
+iptables -t nat -A POSTROUTING -s 192.168.0.0/24 -j SNAT --to 1.1.1.1 将内网 192.168.0.0/24的源地址修改为 1.1.1.1
+iptables -t nat -A POSTROUTING -s 192.168.0.0/24 -j SNAT --to 1.1.1.1-1.1.1.10 将内网 192.168.0.0/24的源地址修改为一个地址池里的 IP
+-j MASQUERADE 动态源地址转换（动态 IP的情况下使用）
+iptables -t nat -APOSTROUTING -s 192.168.0.0/24 -j MASQUERADE 将源地址是 192.168.0.0/24的数据包进行地址伪装
+
+附加模块
+-m state --state <状态>
+状态：NEW、RELATED、ESTABLISHED、INVALID
+      NEW：新连接请求
+      ESTABLISHED：已建立的连接
+      RELATED：相关联的连接，当前连接是一个新请求，但附属于某个已存在的连接
+      INVALID：无法识别的连接
+      UNTRACKED：未追踪的连接
+
+iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-m mac --mac-source MAC  匹配某个 MAC地址
+iptables -A FORWARD -m --mac-source xx:xx:xx:xx:xx:xx -j DROPs 阻断来自某MAC 地址的数据包通过本机
+【注意：报文经过路由后，数据包中原有的mac 信息会被替换，所以在路由后的iptables中使用 mac模块是没有意义的】
+-m limit --limit <匹配速率> 用一定速率去匹配数据包
+iptables -A FORWARD -d 192.168.0.1 -m limit --limit 50/s -j ACCEPT
+iptables -A FORWARD -d 192.168.0.1 -j DROP
+【注意：limit英语上看是限制的意思，但实际上只是按一定速率去匹配而已，要想限制的话后面要再跟一条DROP】
+-m multiport <--sports|--dports|--ports> 端口1[,端口2,..,端口n]一次性匹配多个端口，可以区分源端口，目的端口或不指定端口
+iptables -A INPUT -p tcp -m multiport --dports 21,22,25,80,110 -j ACCEPT
+【注意：必须与 -p参数一起使用】
+
+所有链名必须大写  INPUT/OUTPUT/FORWARD/PREROUTING/POSTROUTING
+所有表名必须小写  filter/nat/mangle
+所有动作必须大写  ACCEPT/DROP/SNAT/DNAT/MASQUERADE
+所有匹配必须小写  -s/-d/-m <module_name>/-p
