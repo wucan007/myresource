@@ -1,0 +1,9 @@
+ssh -X c8 可打开图形界面的远程登陆，免密登录
+ssh root@c8a 非免密登录
+scp -r testfile root@c8a:/home/testfile 传输文件
+ls -lh 以M为单位查看文件大小
+df -h 查看内存使用情况
+du -sh * 查看当前目录下每个文件大小
+ifconfig 查看本机IP
+chown -R 用户名称 目录名称  更改目录所有者
+chmod -R 755 目录名称 更改目录权限命令
