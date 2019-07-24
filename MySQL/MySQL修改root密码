@@ -1,0 +1,12 @@
+修改root密码
+vi /etc/my.cnf，在[mysqld]后面任意一行添加：skip-grant-tables
+
+重启MySQL：service mysqld restart
+重启之后输入mysql即可进入mysql
+
+mysql> use mysql;
+mysql> update user set authentication_string=password("你的新密码") where user="root";
+mysql> flush privileges;
+mysql> quit
+
+vi /etc/my.cnf，去掉刚才添加的内容，再重启MySQL。
