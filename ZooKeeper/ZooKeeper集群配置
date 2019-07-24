@@ -1,0 +1,31 @@
+zookeeper-3.4.10.tar.gz下载地址
+链接：https://pan.baidu.com/s/1PS_fZ3AFPKzJDBT7PDsu3w
+提取码：v2ul
+
+解压zookeeper-3.4.10.tar.gz
+1、复制配置文件
+cp zoo_sample.cfg zoo.cfg
+2、修改配置文件（三台机器配置文件相同）
+vi zoo.cfg
+    dataDir=/home/wucan/zookeeper/zookeeper-3.4.10/data（事先创建好该目录）
+    clientPort=2181
+    server.1=192.168.43.209:2888:3888
+    server.2=192.168.43.210:2888:3888
+    server.3=192.168.43.211:2888:3888
+3、在数据文件夹下新建myid文件
+vi myid
+192.168.43.209机器输入1，保存退出；
+192.168.43.210机器输入2，保存退出；
+192.168.43.211机器输入3，保存退出；
+4、配置环境变量
+vi  /etc/profile （在最后添加如下内容）
+    export ZOOKEEPER_HOME=/home/wucan/zookeeper/zookeeper-3.4.10
+    export PATH=$PATH:$ZOOKEEPER_HOME/bin:$ZOOKEEPER_HOME/conf
+保存后输入source /etc/profile命令使修改生效。
+5、基本操作命令
+zkServer.sh start （启动）
+zkServer.sh restart （重启）
+zkServer.sh status （查看状态）
+zkServer.sh stop （关闭）
+
+nohup bin/zkServer.sh start conf/zoo.cfg &（开启服务）
