@@ -1,0 +1,37 @@
+kafka_2.11-1.0.0.tgz下载地址
+链接：https://pan.baidu.com/s/1H8uvKNYmFnDbBoEb0BPkEw
+提取码：g2j9
+
+一、修改server.properties配置文件（三台机器配置文件除id外，都相同）
+broker.id=1
+host.name=192.168.43.209
+port=9092
+num.network.threads=3
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+log.dirs=../logs（事先创建好该目录）
+num.partitions=1
+num.recovery.threads.per.data.dir=1
+offsets.topic.replication.factor=1
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+log.retention.hours=168
+message.max.byte=5242880
+default.replication.factor=2
+replica.fetch.max.bytes=5242880
+log.segment.bytes=1073741824
+log.retention.check.interval.ms=300000
+zookeeper.connect=192.168.43.209:2181, 192.168.43.210:2181, 192.168.43.211:2181
+zookeeper.connection.timeout.ms=6000
+delete.topic.enable=true（设置topic可以被删除）
+
+二、开启服务
+nohup bin/kafka-server-start.sh config/server.properties &
+
+问题及解决方案：
+1.org.apache.kafka.common.errors.TimeoutException: Expiring 1 record(s) for itheima-0: 30040 ms has passed since batch creation plus linger time
+解决方案：在客户端服务器hosts中加入ip hostname映射
+2.2019-03-20 16:26:36.789 INFO 18445 --- [ntainer#0-0-C-1] o.a.k.c.c.internals.AbstractCoordinator : [Consumer clientId=consumer-2, groupId=sce] Group coordinator 10.1.0.41:9092 (id: 2147483646 rack: null) is unavailable or invalid, will attempt rediscovery
+解决方案：在部署Kafka的服务器hosts中加入ip hostname映射
