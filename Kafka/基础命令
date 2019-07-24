@@ -1,2 +1,42 @@
-查询topic列表：kafka-topics.sh --list --zookeeper 10.1.0.41:2181,10.1.0.42:2181,10.1.0.43:2181
-删除topic：kafka-topics.sh --delete --zookeeper 10.1.0.41:2181,10.1.0.42:2181,10.1.0.43:2181 --topic test
+1、开启zookeeper、Kafka、kafka-manager服务（nohup …… &表示后台执行）
+nohup bin/zkServer.sh start conf/zoo.cfg &
+nohup bin/kafka-server-start.sh config/server.properties &
+nohup ./kafka-manager-Dconfig.file=../conf/application.conf &
+2.	创建topic（任意IP或localhost均可）
+bin/kafka-topics.sh --create --zookeeper 192.168.43.209:2181,192.168.43.210:2181,192.168.43.211:2181 --replication-factor 2 --partitions 3 --topic test
+bin/kafka-topics.sh --create --zookeeper 192.168.43.209:2181 --replication-factor 2 --partitions 1 --topic test2
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 2 --partitions 1 --topic test3
+3.	查看topic列表（任意IP或localhost均可）
+bin/kafka-topics.sh --list --zookeeper 192.168.43.209:2181,192.168.43.210:2181,192.168.43.211:2181
+bin/kafka-topics.sh --list --zookeeper 192.168.43.209:2181
+bin/kafka-topics.sh --list --zookeeper localhost:2181
+4.	查看topic详情（任意IP或localhost均可）
+bin/kafka-topics.sh --describe --zookeeper 192.168.43.209:2181,192.168.43.210:2181,192.168.43.211:2181 --topic test1
+bin/kafka-topics.sh --describe --zookeeper 192.168.43.209:2181 --topic test1
+bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic test1
+5.	发布者发布消息（任意IP均可，localhost不行）
+bin/kafka-console-producer.sh --broker-list 192.168.43.209:9092,192.168.43.210:9092,192.168.43.211:9092 --topic test1
+bin/kafka-console-producer.sh --broker-list 192.168.209:9092 --topic test1
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test1（不行）
+6.	消费者消费消息（任意IP或localhost均可）
+bin/kafka-console-consumer.sh --zookeeper 192.168.43.209:2181,192.168.43.210:2181,192.168.43.211:2181 --topic test1 --from-beginning
+bin/kafka-console-consumer.sh --zookeeper 192.168.43.209:2181 --topic test1 --from-beginning
+bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic test1 --from-beginning
+7.	删除topic（delete.topic.enable=true）
+bin/kafka-topics.sh --delete --zookeeper 192.168.43.209:2181,192.168.43.210:2181,192.168.43.211:2181 --topic test
+8.	Kafka集群管理（网页）
+firefox命令打开浏览器，输入如下网址：
+192.168.43.209:9000
+加权限控制之后：
+9.	添加生产者权限
+bin/kafka-acls.sh --add --authorizer-properties zookeeper.connect=192.168.43.209:2181,192.168.43.210:2181,192.168.43.211:2181 --allow-principal User:sce --producer --topic=test
+10.	添加消费者权限
+bin/kafka-acls.sh --add --authorizer-properties zookeeper.connect=192.168.43.209:2181,192.168.43.210:2181,192.168.43.211:2181  --allow-principal User:sce --consumer --group sce --topic=test15
+11.	查看topic权限
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=192.168.43.209:2181 --list --topic test2
+12.	删除权限
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=192.168.43.209:2181 --operation Write --operation Read --operation Describe --allow-principal User:admin --allow-host * --remove --topic test2
+13.	发布消息
+bin/kafka-console-producer.sh --broker-list 192.168.43.209:9092,192.168.43.210:9092,192.168.43.211:9092 --producer-property security.protocol=SASL_PLAINTEXT --producer-property sasl.mechanism=PLAIN --topic test15
+14.	订阅消息
+bin/kafka-console-consumer.sh --bootstrap-server 192.168.43.209:9092,192.168.43.210:9092,192.168.43.211:9092 --consumer-property security.protocol=SASL_PLAINTEXT --consumer-property sasl.mechanism=PLAIN --topic test3
